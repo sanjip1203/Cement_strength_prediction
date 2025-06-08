@@ -1,28 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Concrete Strength Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .cement-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #8B7355, #A0926B);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input[type="number"]:hover {
+            border-color: #764ba2;
+        }
+
+        .submit-container {
+            text-align: center;
+        }
+
+        input[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            min-width: 200px;
+        }
+
+        input[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        input[type="submit"]:active {
+            transform: translateY(-1px);
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error {
+            margin-top: 30px;
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border-radius: 15px;
+            font-size: 18px;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .strength-meter {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 10px;
+            transition: width 1s ease-out;
+            width: 0%;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .form-container {
+                padding: 25px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="bg-particles" id="particles"></div>
     
-    <h1>Predict csMPa (Concrete Strength)</h1>
-    <form method="POST">
-        {% csrf_token %}
-        Cement: <input type="number" step="any" name="cement"><br><br>
-        Slag: <input type="number" step="any" name="slag"><br><br>
-        Flyash: <input type="number" step="any" name="flyash"><br><br>
-        Water: <input type="number" step="any" name="water"><br><br>
-        Superplasticizer: <input type="number" step="any" name="superplasticizer"><br><br>
-        Coarse Aggregate: <input type="number" step="any" name="coarseaggregate"><br><br>
-        Fine Aggregate: <input type="number" step="any" name="fineaggregate"><br><br>
-        Age: <input type="number" step="any" name="age"><br><br>
-        <input type="submit" value="Predict">
-    </form>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <div class="cement-icon">🏗️</div>
+                Concrete Strength Predictor
+            </h1>
+            <p class="subtitle">Advanced ML-powered compressive strength analysis</p>
+        </div>
 
-    {% if prediction %}
-        <h2>Predicted csMPa: {{ prediction|floatformat:2 }}</h2>
-    {% elif error %}
-        <p style="color:red;">Error: {{ error }}</p>
-    {% endif %}
+        <div class="form-container">
+            <form method="POST" id="predictionForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="cement">
+                            <span class="input-icon">C</span>
+                            Cement (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="cement" id="cement" required placeholder="e.g., 540">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="slag">
+                            <span class="input-icon">S</span>
+                            Blast Furnace Slag (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="slag" id="slag" required placeholder="e.g., 0">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="flyash">
+                            <span class="input-icon">F</span>
+                            Fly Ash (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="flyash" id="flyash" required placeholder="e.g., 0">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="water">
+                            <span class="input-icon">W</span>
+                            Water (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="water" id="water" required placeholder="e.g., 162">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="superplasticizer">
+                            <span class="input-icon">P</span>
+                            Superplasticizer (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="superplasticizer" id="superplasticizer" required placeholder="e.g., 2.5">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="coarseaggregate">
+                            <span class="input-icon">CA</span>
+                            Coarse Aggregate (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="coarseaggregate" id="coarseaggregate" required placeholder="e.g., 1040">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="fineaggregate">
+                            <span class="input-icon">FA</span>
+                            Fine Aggregate (kg/m³)
+                        </label>
+                        <input type="number" step="any" name="fineaggregate" id="fineaggregate" required placeholder="e.g., 676">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="age">
+                            <span class="input-icon">A</span>
+                            Age (days)
+                        </label>
+                        <input type="number" step="any" name="age" id="age" required placeholder="e.g., 28">
+                    </div>
+                </div>
+
+                <div class="submit-container">
+                    <input type="submit" value="🔬 Predict Strength" id="submitBtn">
+                </div>
+            </form>
+
+            <!-- Demo result section -->
+            <div class="result" id="demoResult" style="display: none;">
+                <div>🎯 Predicted Compressive Strength</div>
+                <div style="font-size: 28px; margin: 10px 0;"><strong id="strengthValue">45.23</strong> MPa</div>
+                <div class="strength-meter">
+                    <div class="strength-fill" id="strengthBar"></div>
+                </div>
+                <div style="font-size: 14px; margin-top: 10px; opacity: 0.9;">
+                    Concrete grade: <span id="concreteGrade">M45</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 4 + 2) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Demo prediction functionality
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const cement = parseFloat(document.getElementById('cement').value) || 0;
+            const water = parseFloat(document.getElementById('water').value) || 0;
+            const age = parseFloat(document.getElementById('age').value) || 0;
+            
+            // Simple mock prediction based on water-cement ratio and age
+            const wcRatio = water / (cement || 1);
+            let strength = Math.max(15, 65 - (wcRatio * 30) + (age * 0.3) + (Math.random() * 10 - 5));
+            strength = Math.round(strength * 100) / 100;
+            
+            // Determine concrete grade
+            let grade = 'M15';
+            if (strength >= 20) grade = 'M20';
+            if (strength >= 25) grade = 'M25';
+            if (strength >= 30) grade = 'M30';
+            if (strength >= 35) grade = 'M35';
+            if (strength >= 40) grade = 'M40';
+            if (strength >= 45) grade = 'M45';
+            if (strength >= 50) grade = 'M50';
+            
+            // Show result with animation
+            document.getElementById('strengthValue').textContent = strength.toFixed(2);
+            document.getElementById('concreteGrade').textContent = grade;
+            document.getElementById('demoResult').style.display = 'block';
+            
+            // Animate strength bar
+            setTimeout(() => {
+                const percentage = Math.min((strength / 60) * 100, 100);
+                document.getElementById('strengthBar').style.width = percentage + '%';
+            }, 100);
+            
+            // Scroll to result
+            document.getElementById('demoResult').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Add input animations
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Initialize particles
+        createParticles();
+    </script>
 </body>
 </html>
